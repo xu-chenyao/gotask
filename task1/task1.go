@@ -7,6 +7,11 @@ import (
 )
 
 func main() {
+
+	a := 2
+	var p *int = &a
+	fmt.Println(a,p,*p,&p)
+
 	//两数之和
 	// nums := []int{2, 7, 11, 15}
 	// target := 9
@@ -45,9 +50,9 @@ func main() {
 	// isPalindrome(123321)
 
 	//1、只出现一次的数字
-	nums := []int{4, 1, 2, 1, 2}
-	res := singleNumber(nums)
-	fmt.Println(res)
+	// nums := []int{4, 1, 2, 1, 2}
+	// res := singleNumber(nums)
+	// fmt.Println(res)
 }
 
 /*
