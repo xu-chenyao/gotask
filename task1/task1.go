@@ -8,9 +8,19 @@ import (
 
 func main() {
 
-	a := 2
-	var p *int = &a
-	fmt.Println(a,p,*p,&p)
+	// s5 := []int{1, 2, 3, 4, 5}
+	// s5 = append(s5[:2], s5[3:]...)
+	// fmt.Printf("%v", s5)
+	// s5 = s5[:1]
+	// fmt.Printf("%v", s5)
+	// s5 = s5[:3]
+	// fmt.Printf("%v", s5)
+	// s5 = s5[1:3]
+	// fmt.Printf("%v", s5)
+
+	// a := 2
+	// var p *int = &a
+	// fmt.Println(a, p, *p, &p)
 
 	//两数之和
 	// nums := []int{2, 7, 11, 15}
@@ -29,9 +39,9 @@ func main() {
 	// fmt.Println(merged)
 
 	//6、删除有序数组中的重复项
-	// nums := []int{0, 0, 1, 1, 1, 2, 2, 3, 3, 4}
-	// size := removeDuplicates(nums)
-	// fmt.Println(size)
+	nums := []int{0, 0, 1, 1, 1, 2, 2, 3, 3, 4}
+	size := removeDuplicates(nums)
+	fmt.Println(size)
 
 	//5、加一
 	// digits := []int{1, 2, 9}
@@ -46,7 +56,7 @@ func main() {
 	// a := isValid("(())")
 	// fmt.Println(a)
 
-	//2、判断一个数是否是回文数
+	// 2、判断一个数是否是回文数
 	// isPalindrome(123321)
 
 	//1、只出现一次的数字
@@ -144,10 +154,12 @@ func plusOne(digits []int) []int {
 	for _, v := range digits {
 		result = result*10 + v
 	}
+	fmt.Println(result)
 	result += 1
+	fmt.Println(result)
 
 	str := strconv.Itoa(result)
-
+	fmt.Println(str)
 	num := []int{}
 	for _, v := range str {
 		a := string(v)
@@ -163,14 +175,19 @@ func plusOne(digits []int) []int {
 如果不存在公共前缀，返回空字符串 ""。
 */
 func longestCommonPrefix(strs []string) string {
+	fmt.Println(strs)
 	if len(strs) == 0 {
 		return ""
 	}
 	first := strs[0]
+	fmt.Println(first)
 	for i := 0; i < len(first); i++ {
 		char := first[i]
+		// fmt.Println(reflect.TypeOf(char))
+		fmt.Println(string(char))
 		for j := 0; j < len(strs); j++ {
 			// 如果其余字符串长度不足或字符不匹配
+			fmt.Println(strs[j][i])
 			if i >= len(strs[j]) || strs[j][i] != char {
 				return first[:i] // 返回前缀部分
 			}
@@ -188,34 +205,47 @@ func longestCommonPrefix(strs []string) string {
 每个右括号都有一个对应的相同类型的左括号。
 */
 func isValid(s string) bool {
-	// 如果长度为奇数，直接返回 false
-	if len(s)%2 != 0 {
-		return false
+	// 1. 如果字符串为空，则认为有效
+	if len(s) == 0 {
+		return true
 	}
 
-	mp := map[rune]rune{
+	// 2. 创建一个映射，存储右括号对应的左括号
+	// 这样在遇到右括号时，可以快速查找其匹配的左括号
+	mapper := map[rune]rune{
 		')': '(',
-		']': '[',
 		'}': '{',
+		']': '[',
 	}
-	// 初始化一个栈
+
+	// 3. 使用切片模拟栈。rune类型用于存储字符。
 	stack := []rune{}
-	// 遍历字符串中的每个字符
-	for _, v := range s {
-		// 如果是左括号，压入栈中
-		if mp[v] == 0 {
-			stack = append(stack, v)
-		} else {
-			// 栈为空 或者 栈顶元素不匹配当前右括号，返回 false
-			if len(stack) == 0 || stack[len(stack)-1] != mp[v] {
+
+	// 4. 遍历字符串中的每一个字符 (使用 range 确保正确处理多字节字符，尽管这里只有单字节的括号)
+	for _, char := range s {
+		switch char {
+		case '(', '{', '[': // 如果是左括号，压入栈
+			stack = append(stack, char)
+		case ')', '}', ']': // 如果是右括号
+			// 检查栈是否为空，如果为空说明没有匹配的左括号
+			if len(stack) == 0 {
 				return false
 			}
-			// 匹配成功，弹出栈顶
-			stack = stack[:len(stack)-1]
+			// 弹出栈顶元素（即最近的左括号）
+			top := stack[len(stack)-1]
+			stack = stack[:len(stack)-1] // 模拟弹出
+
+			// 检查弹出的左括号是否与当前右括号匹配
+			if mapper[char] != top {
+				return false // 不匹配，无效
+			}
+		default:
+			// 理论上题目只包含这六种字符，如果包含其他字符，可以根据需求选择返回false或忽略。
+			// 这里我们假设输入只包含题目规定的字符，无需额外处理。
 		}
 	}
 
-	// 最终栈应为空，表示所有括号都匹配
+	// 5. 遍历结束后，如果栈为空，说明所有括号都已正确匹配
 	return len(stack) == 0
 }
 
@@ -229,7 +259,9 @@ func isPalindrome(x int) bool {
 		return false
 	}
 	str := strconv.Itoa(x)
+	fmt.Println(str)
 	runes := []rune(str)
+	fmt.Println(runes)
 	r := make([]rune, len(runes))
 	a := 0
 	for i := len(runes) - 1; i >= 0; i-- {
