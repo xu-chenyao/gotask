@@ -628,7 +628,7 @@ func gormTask1() {
 }
 
 func main() {
-	// sqlxTask1()
-	// sqlxTask2()
+	sqlxTask1()
+	sqlxTask2()
 	gormTask1()
 }
