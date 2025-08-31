@@ -132,6 +132,32 @@ cli_cmd/
 - 支持子命令、标志、帮助系统
 - 错误处理和用户体验优化
 
+## 完整数据流图
+输入: "3 + 5 * 2"
+    ↓
+[第277行] strings.TrimSpace() → "3 + 5 * 2"
+    ↓
+[第281行] NewLexer() 创建:
+    Lexer{input: "3+5*2", position: 0, current: '3'}
+    ↓
+[第282行] NewParser() 创建:
+    Parser{lexer: *Lexer, currentToken: {NUMBER, "3"}}
+    ↓
+[第284行] parser.expr() 执行:
+    ├── term() → factor() → 3.0
+    ├── eat(PLUS) → currentToken = {NUMBER, "5"}
+    ├── term() 处理 "5*2":
+    │   ├── factor() → 5.0
+    │   ├── eat(MULTIPLY) → currentToken = {NUMBER, "2"}
+    │   ├── factor() → 2.0
+    │   └── 5.0 * 2.0 = 10.0
+    └── 3.0 + 10.0 = 13.0
+    ↓
+[第290行] 检查 currentToken.Type == EOF ✓
+    ↓
+[第294行] 返回 (13.0, nil)
+
+
 ## 测试结果
 
 ```bash
