@@ -4,6 +4,39 @@
 
 go-ethereum (geth) 是以太坊的官方命令行客户端。本文档详细介绍了所有可用命令的功能、用法和示例。
 
+main 代码解析：
+命令行参数 (os.Args)
+    ↓
+CLI解析 (app.Run)
+    ↓
+Before钩子 (maxprocs.Set, debug.Setup)
+    ↓
+geth()函数
+    ↓
+prepare() - 网络识别和缓存优化
+    ↓
+makeFullNode() - 创建节点实例
+    ├── gethConfig{Eth, Node, Ethstats, Metrics}
+    ├── node.New(&cfg.Node)
+    └── 注册账户管理器后端
+    ↓
+startNode() - 启动节点服务
+    ├── utils.StartNode() - 启动核心服务
+    │   ├── P2P网络服务器
+    │   ├── RPC服务器 (HTTP/WS/IPC)
+    │   ├── 数据库服务
+    │   └── 以太坊协议服务
+    ├── 钱包事件处理
+    │   ├── WalletArrived → 自动打开
+    │   ├── WalletOpened → 账户派生
+    │   └── WalletDropped → 资源清理
+    └── 同步监控 (可选)
+        └── DoneEvent → 自动退出
+    ↓
+stack.Wait() - 等待节点运行
+    ↓
+After钩子 (debug.Exit, prompt.Stdin.Close)
+
 ## 命令分类
 
 ### 1. 基本信息命令
