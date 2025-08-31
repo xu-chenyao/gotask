@@ -2,6 +2,25 @@
 
 一个基于 `urfave/cli` 框架实现的命令行计算器，支持基本的数学运算和表达式求值。
 
+urfave/cli 框架架构
+├── Command (核心命令结构)
+│   ├── 基本属性 (Name, Usage, Description等)
+│   ├── 子命令 (Commands []*Command)
+│   ├── 标志 (Flags []Flag)
+│   ├── 参数 (Arguments []Argument)
+│   └── 生命周期钩子 (Before, Action, After)
+├── Flag (标志接口和实现)
+│   ├── 基础类型 (String, Int, Bool等)
+│   ├── 切片类型 (StringSlice, IntSlice等)
+│   └── 复杂类型 (Timestamp, Duration等)
+├── Args (参数处理)
+│   ├── 位置参数访问
+│   └── 参数验证
+└── Context (执行上下文)
+    ├── 标志值访问
+    ├── 参数访问
+    └── 命令链访问
+
 ## 功能特性
 
 - ✅ **基本运算**：支持 `+`、`-`、`*`、`/`、`%` 五种基本运算
