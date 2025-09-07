@@ -49,7 +49,9 @@ cd gateway && goctl api go -api gateway.api -dir .
 ```bash
 # 安装并启动 etcd（macOS brew 示例）
 brew install etcd
-nohup etcd --listen-client-urls http://127.0.0.1:2379 \
+mkdir -p /tmp/etcd-data
+nohup etcd --data-dir /tmp/etcd-data \
+           --listen-client-urls http://127.0.0.1:2379 \
            --advertise-client-urls http://127.0.0.1:2379 \
            >/tmp/etcd.log 2>&1 & 
 pgrep etcd
