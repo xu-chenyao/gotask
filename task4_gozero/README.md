@@ -190,7 +190,7 @@ task4_gozero/
       ├─ handler/                # 路由、参数解析、Header 注入
       └─ logic/                  # 转发到 user/blog RPC 的业务逻辑
 ```
-
+```
 二、数据转发流程（HTTP → Gateway → RPC）
 注册:
 HTTP POST /api/register -> gateway/internal/handler/registerhandler.go 解析 JSON
@@ -222,7 +222,7 @@ user 服务 ServiceContext.Users map 更新：插入 UserRecord{Id: auto-increme
 blog ServiceContext.Posts[id] = PostRecord{...}，返回 CreatePostResponse{Post}
 列表:
 遍历 Posts -> 转换为 []blog.Post -> 返回 ListPostsResponse{posts}
-
+```
 
 ## 关键设计与数据流
 
