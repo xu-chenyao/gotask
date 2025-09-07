@@ -50,6 +50,7 @@ cd gateway && goctl api go -api gateway.api -dir .
 # 安装并启动 etcd（macOS brew 示例）
 brew install etcd
 mkdir -p /tmp/etcd-data
+# 1) etcd
 nohup etcd --data-dir /tmp/etcd-data \
            --listen-client-urls http://127.0.0.1:2379 \
            --advertise-client-urls http://127.0.0.1:2379 \
@@ -59,12 +60,29 @@ pkill etcd        # 或者
 kill <PID>
 
 # 确保 etcd 已启动后，分别启动 user、blog、gateway：
-cd rpc/user && go run user.go -f etc/user.yaml >/tmp/user.log 2>&1 &
-cd rpc/blog && go run blog.go -f etc/blog.yaml >/tmp/blog.log 2>&1 &
-cd gateway && ./gateway -f etc/gateway-api.yaml >/tmp/gw.log 2>&1 &
+# 2) user RPC
+cd /Users/xuchenyao/go/src/gotask/task4_gozero/rpc/user
+nohup go run user.go -f etc/user.yaml >/tmp/user.log 2>&1 &
+
+# 3) blog RPC
+cd /Users/xuchenyao/go/src/gotask/task4_gozero/rpc/blog
+nohup go run blog.go -f etc/blog.yaml >/tmp/blog.log 2>&1 &
+
+# 4) gateway
+cd /Users/xuchenyao/go/src/gotask/task4_gozero/gateway
+nohup ./gateway -f etc/gateway-api.yaml >/tmp/gw.log 2>&1 &
 lsof -iTCP:8081 -sTCP:LISTEN
 lsof -iTCP:8082 -sTCP:LISTEN
 lsof -iTCP:8888 -sTCP:LISTEN
+
+查看日志
+tail -f /tmp/etcd.log /tmp/user.log /tmp/blog.log /tmp/gw.log
+
+停止服务
+pkill -f '(^|/)etcd($| )' || true
+pkill -f 'gotask/task4_gozero/rpc/user' || true
+pkill -f 'gotask/task4_gozero/rpc/blog' || true
+pkill -f 'task4_gozero/gateway/gateway' || true
 ```
 
 ## API 与测试（curl）
