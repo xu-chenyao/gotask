@@ -10,30 +10,43 @@ gateway 使用 zrpc.RpcClientConf 连接 user/blog；
 内存数据库代替真实存储；结构清晰，可平滑替换为 MySQL/Redis； -->
 
 ## 环境与依赖
-
-- Go >= 1.23（已在本机）
+- Go >= 1.23
 - protoc、protoc-gen-go、protoc-gen-go-grpc、goctl
 - etcd（用于注册发现）
 
-安装要点（参考已执行命令）：
-
+安装：
 ```bash
 # 安装 goctl + protoc 插件（GOBIN 建议在 PATH 中）
 go install github.com/zeromicro/go-zero/tools/goctl@latest
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 # 验证（确保这些都在 PATH 中）
-which goctl && which protoc-gen-go && which protoc-gen-go-grpc
+which goctl && which protoc &&  which protoc-gen-go && which protoc-gen-go-grpc
+ls -l /Users/xuchenyao/go/bin | cat
 
-#生成骨架
+# 初始化 task4_gozero 子模块
+go mod init gotask/task4_gozero
+# 修正环境变量
+export PATH=/Users/xuchenyao/go/bin:$PATH
+export GOBIN=/Users/xuchenyao/go/bin && export GO111MODULE=on
+
+#goctl 生成 user/blog RPC 和 gateway API 服务骨架
+mkdir -p rpc gateway 
+cd rpc
 goctl rpc new user
 goctl rpc new blog
+cd gateway
 goctl api new gateway
 
-#修改 proto 并生成代码
+#更新 proto 与 api 定义，并用 goctl 重新生成代码
 cd rpc/user && goctl rpc protoc user.proto --go_out=. --go-grpc_out=. --zrpc_out=.
-cd ../blog && goctl rpc protoc blog.proto --go_out=. --go-grpc_out=. --zrpc_out=.
+cd rpc/blog && goctl rpc protoc blog.proto --go_out=. --go-grpc_out=. --zrpc_out=.
+cd gateway && goctl api go -api gateway.api -dir .
+实现 user/blog 的内存逻辑与 JWT，并配置 etcd 和端口
+```
 
+## 服务启动
+```bash
 # 安装并启动 etcd（macOS brew 示例）
 brew install etcd
 nohup etcd --listen-client-urls http://127.0.0.1:2379 \
@@ -176,6 +189,39 @@ task4_gozero/
       └─ logic/                  # 转发到 user/blog RPC 的业务逻辑
 ```
 
+二、数据转发流程（HTTP → Gateway → RPC）
+注册:
+HTTP POST /api/register -> gateway/internal/handler/registerhandler.go 解析 JSON
+调用 gateway/internal/logic/registerlogic.go -> svcCtx.UserRpc.Register
+user/internal/logic/registerlogic.go 更新内存 Users，返回 userId
+登录:
+HTTP POST /api/login -> gateway logic/loginlogic.go -> svcCtx.UserRpc.Login
+user/internal/logic/loginlogic.go 校验密码，生成简单 token "userId|unix"
+发文:
+HTTP POST /api/posts，Header: Authorization: Bearer <token>
+handler 将 Authorization 存入 context -> logic/createpostlogic.go
+解析 Bearer token -> 调 user.Verify -> 获取 userId -> 调 blog.CreatePost，返回 Post
+列表:
+HTTP GET /api/posts -> gateway logic/listpostslogic.go -> 调 blog.ListPosts
+blog/internal/logic/listpostslogic.go 读取内存 Posts 返回列表
+其他（更新/删除/评论）同理（作者校验等在 blog 逻辑层完成）
+
+三、关键数据结构变化（典型调用链）
+注册:
+入参 RegisterReq{username,password,email}
+user 服务 ServiceContext.Users map 更新：插入 UserRecord{Id: auto-increment, ...}
+返回 RegisterResp{userId}
+登录:
+校验 Users[username].Password
+生成 token="userId|timestamp"，返回 LoginResp{token,userId}
+发文:
+从 ctx 读取 "Authorization" header，提取 Bearer token
+调 User.Verify 返回 VerifyResponse{ok,userId,username}
+blog ServiceContext.Posts[id] = PostRecord{...}，返回 CreatePostResponse{Post}
+列表:
+遍历 Posts -> 转换为 []blog.Post -> 返回 ListPostsResponse{posts}
+
+
 ## 关键设计与数据流
 
 - 注册/登录（user.rpc）：
@@ -194,10 +240,10 @@ task4_gozero/
     - 调用 user.Verify 获取 userId；
     - 转发到 blog/user RPC 对应接口，返回结果。
 
+
+
 ## 配置说明
-
 示例（关键片段）：
-
 - rpc/user/etc/user.yaml
 ```yaml
 Name: user.rpc
@@ -239,7 +285,6 @@ JwtSecret: "dev_secret_key"
 
 
 ## 数据结构（内存实现）
-
 - 用户
 ```go
 // svc/user
@@ -276,7 +321,6 @@ Comments map[int64][]*CommentRecord // postId -> comments
 ```
 
 ## 原理与后续改进
-
 - goctl 生成项目骨架 + zrpc 使用 etcd 做服务注册发现；
 - 网关通过 zrpc.RpcClientConf 访问 user、blog 两个 RPC；
 - 认证流程目前为简化 token（`userId|timestamp`），可替换为标准 JWT（HS256）并添加过期校验、中间件拦截；
@@ -284,7 +328,6 @@ Comments map[int64][]*CommentRecord // postId -> comments
 - 错误处理与日志：go-zero 内置 httpx.ErrorCtx、logx、trace/stat 指标，便于观测与追踪。
 
 ## 常见问题
-
 - 8888 端口被占用：
   - 使用 `lsof -iTCP:8888 -sTCP:LISTEN` 定位进程并结束后重启网关；
 - etcd 未启动/连接失败：
