@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package blog;
+option go_package = "./blog";
+
+message Post {
+  int64 id = 1;
+  string title = 2;
+  string content = 3;
+  int64 userId = 4;
+  int64 createdAt = 5;
+  int64 updatedAt = 6;
+}
+
+message CreatePostRequest {
+  string title = 1;
+  string content = 2;
+  int64 userId = 3;
+}
+
+message CreatePostResponse {
+  Post post = 1;
+}
+
+message GetPostRequest {
+  int64 id = 1;
+}
+
+message GetPostResponse {
+  Post post = 1;
+}
+
+message ListPostsRequest {
+  int32 page = 1;
+  int32 size = 2;
+}
+
+message ListPostsResponse {
+  repeated Post posts = 1;
+}
+
+message UpdatePostRequest {
+  int64 id = 1;
+  string title = 2;
+  string content = 3;
+  int64 userId = 4; // author for permission check
+}
+
+message UpdatePostResponse {
+  Post post = 1;
+}
+
+message DeletePostRequest {
+  int64 id = 1;
+  int64 userId = 2; // author for permission check
+}
+
+message DeletePostResponse {
+  bool ok = 1;
+}
+
+message Comment {
+  int64 id = 1;
+  string content = 2;
+  int64 userId = 3;
+  int64 postId = 4;
+  int64 createdAt = 5;
+}
+
+message CreateCommentRequest {
+  int64 postId = 1;
+  string content = 2;
+  int64 userId = 3;
+}
+
+message CreateCommentResponse {
+  Comment comment = 1;
+}
+
+message ListCommentsRequest {
+  int64 postId = 1;
+}
+
+message ListCommentsResponse {
+  repeated Comment comments = 1;
+}
+
+service Blog {
+  rpc CreatePost(CreatePostRequest) returns (CreatePostResponse);
+  rpc GetPost(GetPostRequest) returns (GetPostResponse);
+  rpc ListPosts(ListPostsRequest) returns (ListPostsResponse);
+  rpc UpdatePost(UpdatePostRequest) returns (UpdatePostResponse);
+  rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
+
+  rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse);
+  rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
+}

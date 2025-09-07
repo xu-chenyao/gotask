@@ -1,0 +1,98 @@
+syntax = "v1"
+
+type RegisterReq {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
+}
+
+type RegisterResp {
+	UserId int64 `json:"userId"`
+}
+
+type LoginReq {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type LoginResp {
+	Token  string `json:"token"`
+	UserId int64  `json:"userId"`
+}
+
+type CreatePostReq {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}
+
+type PostResp {
+	Id        int64  `json:"id"`
+	Title     string `json:"title"`
+	Content   string `json:"content"`
+	UserId    int64  `json:"userId"`
+	CreatedAt int64  `json:"createdAt"`
+	UpdatedAt int64  `json:"updatedAt"`
+}
+
+type ListPostsReq {
+	Page int32 `form:"page,default=1"`
+	Size int32 `form:"size,default=10"`
+}
+
+type ListPostsResp {
+	Posts []PostResp `json:"posts"`
+}
+
+type UpdatePostReq {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}
+
+type CreateCommentReq {
+	Content string `json:"content"`
+}
+
+type CommentResp {
+	Id        int64  `json:"id"`
+	Content   string `json:"content"`
+	UserId    int64  `json:"userId"`
+	PostId    int64  `json:"postId"`
+	CreatedAt int64  `json:"createdAt"`
+}
+
+type ListCommentsResp {
+	Comments []CommentResp `json:"comments"`
+}
+
+service gateway-api {
+	// 用户
+	@handler Register
+	post /api/register (RegisterReq) returns (RegisterResp)
+
+	@handler Login
+	post /api/login (LoginReq) returns (LoginResp)
+
+	// 文章
+	@handler CreatePost
+	post /api/posts (CreatePostReq) returns (PostResp)
+
+	@handler GetPost
+	get /api/posts/:id returns (PostResp)
+
+	@handler ListPosts
+	get /api/posts (ListPostsReq) returns (ListPostsResp)
+
+	@handler UpdatePost
+	put /api/posts/:id (UpdatePostReq) returns (PostResp)
+
+	@handler DeletePost
+	delete /api/posts/:id
+
+	// 评论
+	@handler CreateComment
+	post /api/posts/:id/comments (CreateCommentReq) returns (CommentResp)
+
+	@handler ListComments
+	get /api/posts/:id/comments returns (ListCommentsResp)
+}
+

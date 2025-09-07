@@ -15,3 +15,8 @@ docker stop mysql-local
 docker ps -a
 # 查看日志
 docker logs mysql-local
+
+
+testing
+go test -v test.go
+go test -v -run Test2
